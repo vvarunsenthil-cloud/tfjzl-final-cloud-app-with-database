@@ -2,10 +2,23 @@ from django.db import models
 from django.contrib.auth.models import User
 
 
+class Course(models.Model):
+    name = models.CharField(max_length=200)
+
+    def __str__(self):
+        return self.name
+
+
+class Enrollment(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    course = models.ForeignKey(Course, on_delete=models.CASCADE)
+    date_enrolled = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user.username} enrolled in {self.course.name}"
+
+
 class Question(models.Model):
-    """
-    Stores a question for an exam.
-    """
     question_text = models.CharField(max_length=200)
     grade = models.IntegerField(default=1)
 
@@ -14,9 +27,6 @@ class Question(models.Model):
 
 
 class Choice(models.Model):
-    """
-    Stores choices for a question.
-    """
     question = models.ForeignKey(
         Question,
         on_delete=models.CASCADE,
@@ -30,17 +40,13 @@ class Choice(models.Model):
 
 
 class Submission(models.Model):
-    """
-    Stores a user's submission for an exam.
-    """
-    user = models.ForeignKey(
-        User,
+    enrollment = models.ForeignKey(
+        Enrollment,
         on_delete=models.CASCADE
     )
-    choices = models.ManyToManyField(
-        Choice
-    )
+    choices = models.ManyToManyField(Choice)
     submitted_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"Submission by {self.user.username}"
+        return f"Submission for {self.enrollment}"
+
